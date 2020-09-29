@@ -1,0 +1,614 @@
+openapi: 3.0.0
+info:
+  description: |
+    This is an ecommerce API for webstore.
+  version: "3.0.0"
+  title: 'DominicKudix webstore API'
+  termsOfService: ''
+  contact:
+    name: dominic kudiabor
+    email: dominickudd@gmail.com
+  license:
+    name: DominicKudix
+    url: 'https://www.linkedin.com/in/dominickudiabor/'
+servers:
+  - url: https://www.linkedin.com/in/dominickudiabor/
+    description: Dev Server
+tags:
+  - name: admin 
+    description: Action perfomed by an administrator
+    
+  - name: products
+    description: Information about all the products.
+
+  - name: product
+    description: Information about specific product
+
+  - name: user
+    description: information about a specific user
+
+
+
+
+
+paths:
+  /api/v1/products:
+    get:
+      tags: 
+        - products
+      summary: Retrieval of all products
+      description: Obtain information about the products in the database
+      parameters:
+        - name: bodyLimit
+          in: query
+          description: the amount of products returned
+          schema:
+            type: integer
+            minimum: 10
+            maximum: 20
+            example: 15
+
+        - name: pageLimit
+          in: query
+          description: the pages to return product info
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
+            example: 2
+    
+        - name: productName
+          in: query
+          description: searching for products by name
+          schema:
+            type: string
+        
+        - name: categories
+          in: query
+          description: searching for products by category
+          schema:
+            type: string
+            
+        - name: variant
+          in: query
+          description: searching for products by variant
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successful retrieval of product info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Products'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Products'
+        400:
+          description: Invalid status value
+        401:
+          description: Invalid data
+
+
+  /admin/products:  
+    post:
+      tags: 
+        - admin
+      summary: Add a new product to the store
+      description: creates a new product profile in the database
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+             $ref: '#/components/schemas/Product'
+          application/xml:
+            schema:
+             $ref: '#/components/schemas/Product'
+
+      responses:
+        200:
+          description: successfully created a new product profile
+
+        405:
+          description: Invalid input
+
+        
+    put:
+      tags:
+       - admin
+      summary: Update an existing product
+      operationId: update_product
+      responses: 
+       400:
+         description: Invalid ID supplies
+       404:
+         description: Product not found
+       405:
+         description: Validation exception
+    
+      requestBody:
+         content:
+           application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+   
+
+
+    delete:
+      tags: 
+        - admin
+      summary: Deletes a product
+      operationId: delete_product
+      parameters: 
+        - name: apiKey
+          in: header
+          required: false
+          schema:
+            type: string
+        - name: productId
+          in: path
+          description: Product id to delete
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: Successfully deleted the product
+        400:
+          description: Invalid ID supplied
+        404:
+          description: Product not found
+    
+       
+
+
+  /api/v1/products/{productId}:
+    get:
+      tags: 
+        - product
+      summary: Find a specific product by id
+      description: Obtain information about a specific product
+      parameters:
+        - in: path
+          name: productId
+          required: true
+          schema:
+            type: integer
+            description: the ID of the product
+            example: 89
+
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Product'
+        400:
+          description: Invalid ID supplied
+        404:
+          description: Product not found
+
+
+  
+
+            
+            
+  
+  /api/v1/products/{productName}:
+    get:
+      tags: 
+        - product
+      summary: Find a specific product by name
+      description: Obtain information about a specific product
+      parameters:
+        - in: path
+          name: productName
+          required: true
+          schema:
+            type: string
+            description: the name of the product
+            example: 89
+
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/Product'
+
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Product'
+
+        400:
+          description: Invalid name supplied
+        404:
+          description: Product not found
+
+
+
+  /api/v1/users:
+ 
+    post:
+      tags:
+        - user
+      summary:  Creates a new user
+      description:  This can only be executed by a logged in user
+      operationId:  create_user
+      responses:  
+        200:  
+          description:  successful operation
+      requestBody:  
+        content:  
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/User'
+        description:  Created user object
+        required: true
+        
+
+          
+      
+  /api/v1/users/login:
+    get:  
+      tags: 
+        - user
+      summary:  Logs user into the system
+      operationId:  login_user
+      parameters: 
+        - name: userName
+          in: query
+          description:  The user name for login
+          required: true
+          schema: 
+            type: string
+        - name: password
+          in: query
+          description:  The password for login in clear text
+          required: true
+          schema:
+            type: string
+      responses:  
+        200:
+          description:  sucessful operation
+          headers:
+            X-Rate-Limit: 
+              description:  calls per hour allowed by user
+              schema:
+                type: integer
+                format: int32
+            X-Expires-After:  
+              description:  date in UTC when token expires
+              schema: 
+                type: string
+                format: date-time
+          content:  
+            application/json:
+              schema: 
+                type: string
+            application/xml:
+              schema: 
+                type: string
+        400:
+          description:  Invalid username/password suppplied
+        
+  /api/v1/users/logout:
+    get:  
+      tags: 
+        - user
+      summary:  Logs out current logged in session
+      operationId:  logout_user
+      responses:  
+        default:  
+          description: succesful operation
+   
+  /api/v1/users/{userId}:
+    put:
+      tags: 
+        - user
+      summary:  Update a user profile
+      description:  This operation can only be perfomed by a logged in user
+      operationId: update_user
+      parameters: 
+        - name: userId  
+          in: path
+          description:  id of the user
+          required: true
+          schema:
+            type: string
+  
+        - name: firstName
+          in: header
+          description:  first name that needs to be updated
+          schema: 
+            type: string
+        - name: lastName
+          in: header
+          description:  last name that needs to be updated
+          schema: 
+            type: string
+        - name: email
+          in: header
+          description:  email to be updated
+          schema: 
+            type: string
+            
+      responses:
+        200:  
+          description: user profile updated
+        400:  
+          description:  Invalid user supplied
+        404:  
+          description:  User not found
+      requestBody:  
+        content:  
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        description:  Updated user object
+        required: true
+          
+    delete: 
+      tags: 
+        - user
+      summary:  Delete user
+      description:  This can be executed by a loggged in user 
+      operationId:  delete_user
+      parameters: 
+        - name: userId
+          in: path
+          description:  The name that needs to be deleted
+          required: true
+          schema: 
+            type: string  
+      responses:  
+        200:    
+          description: successfully deleted 
+        400:  
+          description:  Invalid userName supplied
+        404:  
+          description:  User not found
+       
+  /api/v1/users/{userName}/newpw:
+    put:
+      tags: 
+        - user
+      summary: Update a user password
+      operationId: update_password
+      parameters: 
+        - name: userName
+          in: path
+          description: username to be updated
+          required: true
+          schema:
+            type: string
+            
+        - name: password
+          in: header
+          description: password to be updated
+          required: true
+          schema:
+            type: string
+     
+      requestBody:
+        content:
+          application/json:
+            schema:
+              description: update existing profile  
+              type: object  
+              properties:
+                password:
+                  type: string
+                  example:  xxxxxxx
+      responses:
+       200: 
+        description: Successfully updated password
+       404:
+        description:  User profile not found
+     
+       
+  
+  /api/v1/users/{userName}/recoverypw:  
+    post: 
+      tags: 
+        - user
+      summary: Send the forgot password email
+      operationId:  password_reset
+      parameters:
+        - name: userName  
+          in: path
+          description:  username of the user
+          required: true
+          schema:
+            type: string
+        - name: forgotPassword
+          in: path
+          required: true
+          schema:
+            type: object 
+            properties:
+              email:  
+                format: not empty 
+                description: The email to send the reset mail to
+                type: string  
+          
+      responses:  
+        200:  
+          description: Reset email succcessfully sent
+        403: 
+          description: Email does not  exist 
+        500:  
+          description: User request not found
+
+  /api/v1/users/{userName}/setpw:   
+    post:
+      tags: 
+        - user
+      summary: Create a  new  passsword
+      operationId: reset_password
+      parameters: 
+        - name: userName  
+          in: path
+          description:  username of the user
+          required: true
+          schema:
+            type: string
+        - name: password  
+          in: header
+          required: true
+          schema:
+            type: object
+            properties:
+              password: 
+                format: not empty
+               
+      requestBody:  
+        content:  
+          application/json:
+            schema: 
+              description: reset old password
+              type: object
+              properties:
+                password:
+                  type: string
+                
+    
+      responses:
+        200:
+          description: Password successfully changed
+        404:
+          description: Recovery token is no longer valid
+      
+  /admin/users/banstatus:
+    put:
+      tags:
+        - admin
+      summary: Ban user status
+      operationId:  ban_status
+      parameters: 
+        - name: apiKey
+          in: header
+          description:  authenticate admin
+          required: true
+          schema: 
+            type: string
+          
+        - name: userId
+          in: header
+          description:  unique identifier
+          required: true
+          schema: 
+            type: string
+        
+        - name: isBanned
+          in: header
+          description:  banned status
+          required: true
+          schema: 
+            type: boolean
+            
+        - name: description
+          in: header
+          description: reason for ban / unban
+          required: true
+          schema: 
+            type: string
+            
+      requestBody:
+        content:
+          application/json:
+            schema: 
+              description:  update current ban status
+              type: object
+              properties:
+                id:
+                  type: integer
+                  format: int64
+                  example:  345
+                isBanned:
+                  type: boolean
+                  example:  true
+                description:  
+                  type: string
+                  example:  spam profile
+                  
+      responses:
+       200: 
+        description: Successfully updated banstatus
+       404:
+        description:  User profile not found
+        
+
+                
+      
+
+   
+components:
+  schemas:
+    Products:
+      description: Array of the entire product information
+      type: array
+      items:
+        $ref: '#/components/schemas/Product'
+
+    Product:
+      description: Model containing product info
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 21
+
+        name:
+          type: string
+          example: 'Nike joyrun 11'
+
+        description:
+          type: string
+          example: 'trail running'
+
+        categories:
+          type: string
+          example: 'trail running'
+
+        variants:
+          type: 'string'
+          example: 'purple, blue and black'
+
+        sizes:
+          type: integer
+          example: 11
+
+        
+    
+    User:
+      description: Model containing information about a specific user
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example:  12
+        username:
+          type: string
+          example:  happyhunkies
+        firstName:
+          type: string
+          example:  Kirk
+        lastName:
+          type: string
+          example:  Cobain
+        email:
+          type: string
+          example:  kirkcobain@youguessedit.com
+        password:
+          type: string
