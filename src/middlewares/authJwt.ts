@@ -12,7 +12,7 @@ export default async function authJwt(
   try {
     const token = req.headers['authorization']?.replace('Bearer ', '') || ''
 
-    const decoded = (await jwt.verify(token, JWT_SECRET)) as { email: string }
+    const decoded = jwt.verify(token, JWT_SECRET) as { email: string }
 
     const user = await Users.findOne({ email: decoded.email })
 
